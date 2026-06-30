@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SO-HMNS v63.0 Global Prediction Core</title>
-    <!-- 최신 보안 HTTPS Leaflet 지도 라이브러리 탑재 -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
     <style>
@@ -33,10 +32,9 @@
         </div>
     </div>
     <script>
-        // 사이버펑크 암흑 다크 테마 지도 레이아웃 가동
-        var map = L.map('map', { zoomControl: false }).setView([0, 20], 2);
-        L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; CartoDB'
+        var map = L.map('map', { zoomControl: false }).setView([20.0, 0.0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
         function updateMatrix() {
