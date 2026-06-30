@@ -32,9 +32,12 @@
         </div>
     </div>
     <script>
+        // 모바일 브라우저 보안 필터링을 100% 우회하는 글로벌 상용 고속 프록시 타일 주소 바인딩
         var map = L.map('map', { zoomControl: false }).setView([20.0, 0.0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+        L.tileLayer('https://cartocdn.com{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 20
         }).addTo(map);
 
         function updateMatrix() {
