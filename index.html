@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SO-HMNS v63.1 Global Prediction Core</title>
-    <!-- 무결성 HTTPS Leaflet 엔진 바인딩 -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
     <style>
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #050814; overflow: hidden; }
-        /* [보완] 지도가 절대 찌그러지지 않도록 뷰포트 물리 면적 100% 강제 고정 */
         #map { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; background-color: #050814; }
         .cyber-panel { position: absolute; top: 20px; right: 20px; z-index: 10; background: rgba(5, 8, 20, 0.9); padding: 15px; border: 1px solid #1e3a8a; border-radius: 4px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); width: 220px; }
         h2 { margin: 0 0 10px 0; font-size: 13px; color: #f43f5e; text-transform: uppercase; letter-spacing: 1px; font-family: monospace; }
@@ -34,13 +32,12 @@
         </div>
     </div>
     <script>
-        // 전 세계 5대양 6대륙이 오차 없이 정중앙에 고정되도록 초기 좌표 록킹
+        // 전 세계 5대양 6대륙이 한눈에 보이는 표준 글로벌 좌표 록킹
         var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([20.0, 0.0], 2);
         
-        // [보완] 보안 검열 및 모바일 크롬 브라우저에서 100% 호환되는 실시간 글로벌 지도 타일 레이어 주입
-        L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            subdomains: 'abcd'
+        // 차단막 없는 글로벌 오픈소스 표준 지도 레이어 결속 (HTTPS 완벽 대응)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
         }).addTo(map);
 
         function updateMatrix() {
@@ -49,7 +46,6 @@
         }
         updateMatrix();
         
-        // 런타임 이미지 픽셀 크기 재조정 트리거 격발
         setTimeout(function(){ map.invalidateSize(); }, 500);
     </script>
 </body>
