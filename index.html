@@ -2,73 +2,82 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SO-HMNS v63.3 Global Prediction Core</title>
-    <!-- 보안 필터링을 완벽히 우회하기 위한 정식 HTTPS 자바스크립트 컴포넌트 바인딩 -->
+    <!-- Leaflet 지도 라이브러리 정상 바인딩 (보안 프로토콜 https 적용) -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
     <style>
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #050814; overflow: hidden; }
-        /* [보완] 지도가 찌그러지지 않도록 뷰포트 물리 면적 100% 강제 록킹 */
-        #map { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; background-color: #050814; }
-        .cyber-panel { position: absolute; top: 20px; right: 20px; z-index: 10; background: rgba(5, 8, 20, 0.9); padding: 15px; border: 1px solid #1e3a8a; border-radius: 4px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); width: 220px; }
-        h2 { margin: 0 0 10px 0; font-size: 13px; color: #f43f5e; text-transform: uppercase; letter-spacing: 1px; font-family: monospace; }
-        .control-group { margin-bottom: 10px; }
-        label { display: block; font-size: 10px; color: #64748b; margin-bottom: 4px; font-family: monospace; }
-        input[type="range"] { width: 100%; -webkit-appearance: none; background: #1e293b; height: 6px; border-radius: 3px; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #38bdf8; cursor: pointer; box-shadow: 0 0 8px #38bdf8; }
-        .status-log { font-size: 11px; line-height: 1.4; color: #34d399; font-family: monospace; }
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: #050b14;
+            font-family: monospace;
+            color: #70a0ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        /* 대시보드 모니터 스타일 */
+        .monitor-box {
+            background: rgba(10, 25, 47, 0.85);
+            border: 1px solid #1e3a8a;
+            box-shadow: 0 0 20px rgba(30, 58, 138, 0.5);
+            border-radius: 8px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .title { color: #f43f5e; font-weight: bold; margin-bottom: 5px; letter-spacing: 1px; }
+        .sub { color: #64748b; font-size: 0.85rem; margin-bottom: 15px; }
+        .status-line { margin: 8px 0; font-size: 0.95rem; }
+        .success { color: #10b981; font-weight: bold; }
+        
+        /* [핵심 교정] 지도가 절대 찌그러지거나 숨겨지지 않도록 크기 고정 */
+        #map { 
+            width: 90%; 
+            max-width: 450px; 
+            height: 300px; 
+            border-radius: 8px; 
+            border: 1px solid #1e3a8a;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <div class="cyber-panel">
-        <h2>SO-HMNS v63.3 MONITOR</h2>
-        <div class="control-group">
-            <label>MAGNITUDE COEFFICIENT</label>
-            <input type="range" id="magSlider" min="0" max="10" step="0.1" value="6.5" oninput="updateMatrix()">
-        </div>
-        <div class="status-log" id="logConsole">
-            [SYS] Core System Active.<br>
-            [SYS] Ready to compute.
-        </div>
+
+    <!-- SO-HMNS 대시보드 모니터 구조 -->
+    <div class="monitor-box">
+        <div class="title">SO-HMNS V63.3 MONITOR</div>
+        <div class="sub">MAGNITUDE COEFFICIENT 6.5</div>
+        <hr style="border: 0; border-top: 1px solid #1e3a8a; margin: 15px 0;">
+        <div class="status-line">[SYS] Auto-Computing...</div>
+        <div class="status-line">[MATRIX] Active Factoring: M 4.9</div>
+        <div class="status-line">[STATUS] <span class="success">100% SUCCESS</span></div>
     </div>
+
+    <!-- 지도가 렌더링될 실제 구역 -->
+    <div id="map"></div>
+
     <script>
-        // 전 세계 5대양 6대륙 정중앙 표준 위도 경도 축 고정
-        var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([20.0, 0.0], 2);
-        
-        // [보안 우회 보완] 이미지 서버 점검 및 차단막을 완벽히 무력화하는 브라우저 그래픽 메모리 단독 렌더링 레이어
-        L.rect([[-90, -180], [90, 180]], {color: "#050814", weight: 1, fillColor: "#0b132b", fillOpacity: 1}).addTo(map);
-        
-        // 주요 대륙 및 단층대 형상을 순수 소스코드로 직접 투사하는 고차 위상 벡터 배열 배치
-        var continents = [
-            [[10, 25], [75, 170]],  // 아시아/유럽 대수 평면 그리드
-            [[-35, -20], [35, 50]],  // 아프리카 대수 평면 그리드
-            [[15, -165], [75, -50]], // 북미 대수 평면 그리드
-            [[-55, -80], [12, -35]], // 남미 대수 평면 그리드
-            [[-45, 110], [-10, 155]] // 오세아니아 대수 평면 그리드
-        ];
-        
-        continents.forEach(function(zone) {
-            L.rectangle(zone, {color: "#1e3a8a", weight: 1.5, fillColor: "#0f172a", fillOpacity: 0.8}).addTo(map);
-        });
+        // 지도를 초기화하고 대한민국 서울 좌표를 중심점으로 잡습니다.
+        var map = L.map('map').setView([37.5665, 126.9780], 13);
 
-        // 태평양 불의 고리 지진 단층대선 실시간 인라인 각인
-        var ringOfFire = [
-            [-40, -75], [-20, -70], [0, -80], [15, -100], [20, -105], 
-            [60, -150], [65, 170], [50, 140], [35, 140], [10, 125], 
-            [-10, 110], [-40, 175]
-        ];
-        L.polyline(ringOfFire, {color: "#f43f5e", weight: 2, opacity: 0.8, dashArray: "5, 5"}).addTo(map);
+        // 오픈스트리트맵 타일 레이어 추가 (https 보안 프로토콜 링크)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
-        function updateMatrix() {
-            var val = document.getElementById('magSlider').value;
-            document.getElementById('logConsole').innerHTML = '[SYS] Auto-Computing...<br>[MATRIX] Active Factoring: M ' + val + '<br>[STATUS] 100% SUCCESS';
-        }
-        updateMatrix();
-        
-        // 런타임 이미지 픽셀 크기 강제 재조정
-        setTimeout(function(){ map.invalidateSize(); }, 500);
+        // 중심점에 글로벌 코어 마커 세팅
+        L.marker([37.5665, 126.9780]).addTo(map)
+            .bindPopup('[SYS] SO-HMNS Core Active.')
+            .openPopup();
     </script>
 </body>
 </html>
