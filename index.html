@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SO-HMNS v63.3 Global Prediction Core</title>
-    <!-- Leaflet 지도 라이브러리 정상 바인딩 (보안 프로토콜 https 적용) -->
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <script src="https://unpkg.com"></script>
+    
+    <!-- 1. Leaflet 오픈소스 지도 CDN 링크 연동 (보안 HTTPS 명시) -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <script src="https://cloudflare.com"></script>
+
     <style>
         html, body { 
             margin: 0; 
@@ -21,7 +23,6 @@
             align-items: center;
             justify-content: center;
         }
-        /* 대시보드 모니터 스타일 */
         .monitor-box {
             background: rgba(10, 25, 47, 0.85);
             border: 1px solid #1e3a8a;
@@ -38,20 +39,20 @@
         .status-line { margin: 8px 0; font-size: 0.95rem; }
         .success { color: #10b981; font-weight: bold; }
         
-        /* [핵심 교정] 지도가 절대 찌그러지거나 숨겨지지 않도록 크기 고정 */
+        /* 지도 컨테이너 스타일 */
         #map { 
             width: 90%; 
             max-width: 450px; 
-            height: 300px; 
+            height: 320px; 
             border-radius: 8px; 
             border: 1px solid #1e3a8a;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            background: #091322; /* 로딩 전 배경색 */
         }
     </style>
 </head>
 <body>
 
-    <!-- SO-HMNS 대시보드 모니터 구조 -->
     <div class="monitor-box">
         <div class="title">SO-HMNS V63.3 MONITOR</div>
         <div class="sub">MAGNITUDE COEFFICIENT 6.5</div>
@@ -61,23 +62,40 @@
         <div class="status-line">[STATUS] <span class="success">100% SUCCESS</span></div>
     </div>
 
-    <!-- 지도가 렌더링될 실제 구역 -->
+    <!-- 실제 지도가 매핑될 컨테이너 -->
     <div id="map"></div>
 
     <script>
-        // 지도를 초기화하고 대한민국 서울 좌표를 중심점으로 잡습니다.
-        var map = L.map('map').setView([37.5665, 126.9780], 13);
+        // DOM 요소와 외부 스크립트 로드가 완벽히 끝난 후 안전하게 실행
+        window.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Leaflet 라이브러리가 로드되었는지 최종 확인
+                if (typeof L !== 'undefined') {
+                    // 지도 객체 초기화 (서울 중심점 설정)
+                    var map = L.map('map').setView([37.5665, 126.9780], 11);
 
-        // 오픈스트리트맵 타일 레이어 추가 (https 보안 프로토콜 링크)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+                    // 표준 오픈스트리트맵 레이어 연결
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OSM'
+                    }).addTo(map);
 
-        // 중심점에 글로벌 코어 마커 세팅
-        L.marker([37.5665, 126.9780]).addTo(map)
-            .bindPopup('[SYS] SO-HMNS Core Active.')
-            .openPopup();
+                    // 중심점 마커 바인딩
+                    L.marker([37.5665, 126.9780]).addTo(map)
+                        .bindPopup('<b>[SYS] SO-HMNS Core Active</b>')
+                        .openPopup();
+                        
+                    // 모바일 브라우저 렌더링 밀림 현상 강제 방지 고정 명령어
+                    setTimeout(function() {
+                        map.invalidateSize();
+                    }, 400);
+                } else {
+                    document.getElementById('map').innerHTML = "<p style='color:#f43f5e; padding:20px;'>[ERR] Map Library CDN Blocked.</p>";
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        });
     </script>
 </body>
 </html>
